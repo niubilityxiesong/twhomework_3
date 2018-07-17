@@ -6,12 +6,15 @@ module.exports = function printInventory(inputs) {
    let productData = allData.loadAllItems();
    let cutData = allData.loadPromotions();
    let countProduce =[];
+   let cutProduct = [];
 
-   countProduce = get_produces_numbers(inputs);
-   console.log(countProduce);
+   countProduce = Get_Produces_Numbers(inputs);
+   cutProduct = Get_Product_Cut(countProduce, cutData[0]['barcodes']);
+   Print_List(countProduce, cutProduct, productData);
+
 };
 
-function get_produces_numbers(inputs) {
+function Get_Produces_Numbers(inputs) {
     let countProduce = []
     let countNum = 1;
 
@@ -37,4 +40,54 @@ function get_produces_numbers(inputs) {
     }
     countProduce[inputs[inputs.length - 1]] = countNum;
     return countProduce;
+}
+
+function Get_Product_Cut(countProduce, cutData) {
+    let cutProduct = [];
+    let keyName = Object.keys(countProduce);
+
+    for (let i = 0; i < keyName.length; i++) {
+        if(cutData.indexOf(keyName[i]) != -1){
+            cutProduct[keyName[i]] = Math.floor(countProduce[keyName[i]] / 3);
+        }
+    }
+    return cutProduct;
+}
+
+function Print_List(countProduce, cutProduct, productData){
+    let keyName = Object.keys(countProduce);
+    let cutName = Object.keys(cutProduct);
+    let sumMoney = [];
+    let lessMoney = 0;
+    let result = "";
+
+    result += "***<没钱赚商店>购物清单***\n";
+    for (let i = 0; i < keyName.length; i++) {
+        let location = parseInt(keyName[i].slice(4,10));
+
+        if(cutName.indexOf(keyName[i]) === -1){
+            sumMoney.push(productData[location]["price"] * countProduce[keyName[i]]);
+        }
+        else {
+            sumMoney.push(productData[location]["price"] * (countProduce[keyName[i]] - cutProduct[cutName[cutName.indexOf(keyName[i])]]));
+        }
+        result += '名称：' + productData[location]["name"] + '，数量：' + countProduce[productData[location]["barcode"]]
+            + productData[location]["unit"] + '，单价：' + productData[location]["price"].toFixed(2)
+            + '(元)，小计：' + sumMoney[i].toFixed(2) + '(元)\n';
+    }
+
+    result += '----------------------\n';
+    result += '挥泪赠送商品：\n';
+    for (let i = 0; i < cutName.length; i++) {
+        let location = parseInt(cutName[i].slice(4,10));
+        result += '名称：' + productData[location]["name"] + '，数量：' + cutProduct[productData[location]["barcode"]]
+        + productData[location]["unit"] + '\n';
+        lessMoney += cutProduct[productData[location]["barcode"]] * productData[location]["price"];
+    }
+    result += '----------------------\n';
+    result += '总计：' + sumMoney.reduce((x, y) => x + y).toFixed(2) + '(元)\n';
+    result += '节省：' + lessMoney.toFixed(2) + '(元)\n';
+    result += '**********************';
+
+    console.log(result);
 }
