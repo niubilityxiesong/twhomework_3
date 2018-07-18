@@ -1,8 +1,10 @@
-var NORMAL_PRODUCT_LENGTH = 10;
+// 1，代码风格一致（函数以小写开头）
+
+let allData = require("./datbase.js");
+const NORMAL_PRODUCT_LENGTH = 10;
 
 module.exports = function printInventory(inputs) {
 
-   let allData = require("./datbase.js");
    let productData = allData.loadAllItems();
    let cutData = allData.loadPromotions();
    let countProduce =[];
